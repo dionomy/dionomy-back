@@ -124,12 +124,23 @@ class JpaScheduleRepository(
     override fun save(session: ClassSession): ClassSession =
         springDataRepository.save(ClassSessionJpaEntity.fromDomain(session)).toDomain()
 
+    override fun get(tenantId: UUID, sessionId: UUID): ClassSession =
+        springDataRepository.findById(sessionId)
+            .filter { it.tenantId == tenantId }
+            .map { it.toDomain() }
+            .orElseThrow { NoSuchElementException("Class session not found: $sessionId") }
+
     override fun findByTenantAndDateRange(tenantId: UUID, from: LocalDate, to: LocalDate): List<ClassSession> =
         springDataRepository.findByTenantIdAndStartsAtBetweenOrderByStartsAtAsc(
             tenantId = tenantId,
             from = from.atStartOfDay(),
             to = to.plusDays(1).atStartOfDay().minusNanos(1),
         ).map { it.toDomain() }
+
+    override fun delete(tenantId: UUID, sessionId: UUID) {
+        val session = get(tenantId, sessionId)
+        springDataRepository.delete(ClassSessionJpaEntity.fromDomain(session))
+    }
 }
 
 private fun String.toUuidList(): List<UUID> =
