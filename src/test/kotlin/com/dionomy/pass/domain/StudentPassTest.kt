@@ -12,9 +12,11 @@ class StudentPassTest {
         val pass = StudentPass(
             id = UUID.randomUUID(),
             tenantId = UUID.randomUUID(),
+            productId = UUID.randomUUID(),
             studentId = UUID.randomUUID(),
             totalCount = 10,
-            usedCount = 10,
+            usedCountValue = 10,
+            issuedOn = LocalDate.now().minusDays(10),
             expiresOn = LocalDate.now().plusDays(10),
         )
 
@@ -26,9 +28,11 @@ class StudentPassTest {
         val pass = StudentPass(
             id = UUID.randomUUID(),
             tenantId = UUID.randomUUID(),
+            productId = UUID.randomUUID(),
             studentId = UUID.randomUUID(),
             totalCount = 10,
-            usedCount = 3,
+            usedCountValue = 3,
+            issuedOn = LocalDate.now().minusDays(10),
             expiresOn = LocalDate.now().plusDays(10),
         )
 
