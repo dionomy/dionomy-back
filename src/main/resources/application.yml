@@ -2,9 +2,9 @@ spring:
   application:
     name: dionomy-backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/dionomy
-    username: dionomy
-    password: dionomy
+    url: ${DIONOMY_DATABASE_URL}
+    username: ${DIONOMY_DATABASE_USERNAME}
+    password: ${DIONOMY_DATABASE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
