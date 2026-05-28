@@ -3,6 +3,7 @@ package com.dionomy.adminsetup.presentation
 import com.dionomy.adminsetup.application.CreateTenantSetupCommand
 import com.dionomy.adminsetup.application.CreateTenantSetupUseCase
 import com.dionomy.adminsetup.application.ListTenantSetupsUseCase
+import com.dionomy.adminsetup.application.UpdateTenantSetupStatusUseCase
 import com.dionomy.adminsetup.domain.TenantSetup
 import com.dionomy.adminsetup.domain.WhiteLabelBuildStatus
 import com.dionomy.tenant.domain.TenantStatus
@@ -10,6 +11,8 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,6 +25,7 @@ import java.util.UUID
 class AdminSetupController(
     private val createTenantSetupUseCase: CreateTenantSetupUseCase,
     private val listTenantSetupsUseCase: ListTenantSetupsUseCase,
+    private val updateTenantSetupStatusUseCase: UpdateTenantSetupStatusUseCase,
 ) {
     @GetMapping
     fun list(): List<TenantSetupResponse> =
@@ -30,6 +34,13 @@ class AdminSetupController(
     @PostMapping
     fun create(@Valid @RequestBody request: CreateTenantSetupRequest): TenantSetupResponse =
         createTenantSetupUseCase.execute(request.toCommand()).toResponse()
+
+    @PatchMapping("/{setupId}/status")
+    fun updateStatus(
+        @PathVariable setupId: UUID,
+        @RequestBody request: UpdateTenantStatusRequest,
+    ): TenantSetupResponse =
+        updateTenantSetupStatusUseCase.execute(setupId, request.status).toResponse()
 }
 
 data class CreateTenantSetupRequest(
@@ -47,6 +58,10 @@ data class CreateTenantSetupRequest(
             mainColor = mainColor,
         )
 }
+
+data class UpdateTenantStatusRequest(
+    val status: TenantStatus,
+)
 
 data class TenantSetupResponse(
     val id: UUID,
