@@ -1,9 +1,12 @@
 package com.dionomy.student.presentation
 
 import com.dionomy.student.application.GetStudentUseCase
+import com.dionomy.student.application.GetStudentOperationSummaryUseCase
 import com.dionomy.student.application.ListStudentsUseCase
 import com.dionomy.student.application.RegisterStudentCommand
 import com.dionomy.student.application.RegisterStudentUseCase
+import com.dionomy.student.application.StudentOperationSummary
+import com.dionomy.student.application.StudentPassSummary
 import com.dionomy.student.domain.Student
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -23,6 +26,7 @@ class StudentController(
     private val registerStudentUseCase: RegisterStudentUseCase,
     private val listStudentsUseCase: ListStudentsUseCase,
     private val getStudentUseCase: GetStudentUseCase,
+    private val getStudentOperationSummaryUseCase: GetStudentOperationSummaryUseCase,
 ) {
     @GetMapping
     fun list(@RequestHeader("X-Tenant-Id") tenantId: UUID): List<StudentResponse> =
@@ -41,6 +45,10 @@ class StudentController(
         @PathVariable studentId: UUID,
     ): StudentResponse =
         getStudentUseCase.execute(tenantId, studentId).toResponse()
+
+    @GetMapping("/operation-summary")
+    fun operationSummary(@RequestHeader("X-Tenant-Id") tenantId: UUID): StudentOperationSummaryResponse =
+        getStudentOperationSummaryUseCase.execute(tenantId).toResponse()
 }
 
 data class RegisterStudentRequest(
@@ -71,6 +79,23 @@ data class StudentResponse(
     val createdAt: LocalDateTime,
 )
 
+data class StudentOperationSummaryResponse(
+    val totalStudents: Int,
+    val passExpiringSoonCount: Int,
+    val passLowRemainingCount: Int,
+    val students: List<StudentPassSummaryResponse>,
+)
+
+data class StudentPassSummaryResponse(
+    val studentId: UUID,
+    val activePassId: UUID?,
+    val remainingCount: Int?,
+    val totalCount: Int?,
+    val expiresOn: java.time.LocalDate?,
+    val expiringSoon: Boolean,
+    val lowRemaining: Boolean,
+)
+
 private fun Student.toResponse(): StudentResponse =
     StudentResponse(
         id = id,
@@ -80,4 +105,23 @@ private fun Student.toResponse(): StudentResponse =
         memo = memo,
         tags = tags,
         createdAt = createdAt,
+    )
+
+private fun StudentOperationSummary.toResponse(): StudentOperationSummaryResponse =
+    StudentOperationSummaryResponse(
+        totalStudents = totalStudents,
+        passExpiringSoonCount = passExpiringSoonCount,
+        passLowRemainingCount = passLowRemainingCount,
+        students = students.map { it.toResponse() },
+    )
+
+private fun StudentPassSummary.toResponse(): StudentPassSummaryResponse =
+    StudentPassSummaryResponse(
+        studentId = studentId,
+        activePassId = activePassId,
+        remainingCount = remainingCount,
+        totalCount = totalCount,
+        expiresOn = expiresOn,
+        expiringSoon = expiringSoon,
+        lowRemaining = lowRemaining,
     )

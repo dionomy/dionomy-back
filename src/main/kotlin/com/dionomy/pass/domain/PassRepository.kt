@@ -7,6 +7,7 @@ interface PassRepository {
     fun findProductsByTenant(tenantId: UUID): List<PassProduct>
     fun findProductByTenantAndId(tenantId: UUID, productId: UUID): PassProduct?
     fun saveStudentPass(pass: StudentPass): StudentPass
+    fun findPassesByTenant(tenantId: UUID): List<StudentPass>
     fun findPassesByTenantAndStudent(tenantId: UUID, studentId: UUID): List<StudentPass>
     fun findStudentPassByTenantAndId(tenantId: UUID, passId: UUID): StudentPass?
     fun appendUsageLog(log: PassUsageLog): PassUsageLog

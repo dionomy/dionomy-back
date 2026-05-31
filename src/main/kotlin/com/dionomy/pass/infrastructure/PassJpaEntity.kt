@@ -164,6 +164,7 @@ interface SpringDataPassProductJpaRepository : JpaRepository<PassProductJpaEntit
 }
 
 interface SpringDataStudentPassJpaRepository : JpaRepository<StudentPassJpaEntity, UUID> {
+    fun findByTenantIdOrderByExpiresOnDesc(tenantId: UUID): List<StudentPassJpaEntity>
     fun findByTenantIdAndStudentIdOrderByExpiresOnDesc(tenantId: UUID, studentId: UUID): List<StudentPassJpaEntity>
     fun findByTenantIdAndId(tenantId: UUID, id: UUID): StudentPassJpaEntity?
 }
@@ -189,6 +190,9 @@ class JpaPassRepository(
 
     override fun saveStudentPass(pass: StudentPass): StudentPass =
         studentPassRepository.save(StudentPassJpaEntity.fromDomain(pass)).toDomain()
+
+    override fun findPassesByTenant(tenantId: UUID): List<StudentPass> =
+        studentPassRepository.findByTenantIdOrderByExpiresOnDesc(tenantId).map { it.toDomain() }
 
     override fun findPassesByTenantAndStudent(tenantId: UUID, studentId: UUID): List<StudentPass> =
         studentPassRepository.findByTenantIdAndStudentIdOrderByExpiresOnDesc(tenantId, studentId).map { it.toDomain() }
