@@ -3,6 +3,9 @@ package com.dionomy.crm.infrastructure
 import com.dionomy.crm.domain.CareRecord
 import com.dionomy.crm.domain.CareRecordRepository
 import com.dionomy.crm.domain.CareRecordStatus
+import com.dionomy.crm.domain.RetentionSignalRecord
+import com.dionomy.crm.domain.RetentionSignalRepository
+import com.dionomy.crm.domain.RetentionSignalType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,6 +14,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -55,8 +59,62 @@ class CareRecordJpaEntity(
     }
 }
 
+@Entity
+@Table(name = "retention_signals")
+class RetentionSignalJpaEntity(
+    @Id
+    @Column(name = "id", nullable = false)
+    var id: UUID = UUID.randomUUID(),
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID = UUID.randomUUID(),
+    @Column(name = "student_id", nullable = false)
+    var studentId: UUID = UUID.randomUUID(),
+    @Column(name = "student_name", nullable = false)
+    var studentName: String = "",
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    var type: RetentionSignalType = RetentionSignalType.NEW_SETTLING,
+    @Column(name = "label", nullable = false)
+    var label: String = "",
+    @Column(name = "reason", nullable = false)
+    var reason: String = "",
+    @Column(name = "refreshed_at", nullable = false)
+    var refreshedAt: LocalDateTime = LocalDateTime.now(),
+) {
+    fun toDomain(): RetentionSignalRecord =
+        RetentionSignalRecord(
+            id = id,
+            tenantId = tenantId,
+            studentId = studentId,
+            studentName = studentName,
+            type = type,
+            label = label,
+            reason = reason,
+            refreshedAt = refreshedAt,
+        )
+
+    companion object {
+        fun fromDomain(signal: RetentionSignalRecord): RetentionSignalJpaEntity =
+            RetentionSignalJpaEntity(
+                id = signal.id,
+                tenantId = signal.tenantId,
+                studentId = signal.studentId,
+                studentName = signal.studentName,
+                type = signal.type,
+                label = signal.label,
+                reason = signal.reason,
+                refreshedAt = signal.refreshedAt,
+            )
+    }
+}
+
 interface SpringDataCareRecordJpaRepository : JpaRepository<CareRecordJpaEntity, UUID> {
     fun findByTenantIdAndStudentIdOrderByCreatedAtDesc(tenantId: UUID, studentId: UUID): List<CareRecordJpaEntity>
+}
+
+interface SpringDataRetentionSignalJpaRepository : JpaRepository<RetentionSignalJpaEntity, UUID> {
+    fun deleteByTenantId(tenantId: UUID)
+    fun findByTenantIdOrderByRefreshedAtDescStudentNameAsc(tenantId: UUID): List<RetentionSignalJpaEntity>
 }
 
 @Repository
@@ -68,4 +126,18 @@ class JpaCareRecordRepository(
 
     override fun findByTenantAndStudent(tenantId: UUID, studentId: UUID): List<CareRecord> =
         springDataRepository.findByTenantIdAndStudentIdOrderByCreatedAtDesc(tenantId, studentId).map { it.toDomain() }
+}
+
+@Repository
+class JpaRetentionSignalRepository(
+    private val springDataRepository: SpringDataRetentionSignalJpaRepository,
+) : RetentionSignalRepository {
+    @Transactional
+    override fun replaceTenantSignals(tenantId: UUID, signals: List<RetentionSignalRecord>) {
+        springDataRepository.deleteByTenantId(tenantId)
+        springDataRepository.saveAll(signals.map { RetentionSignalJpaEntity.fromDomain(it) })
+    }
+
+    override fun findByTenant(tenantId: UUID): List<RetentionSignalRecord> =
+        springDataRepository.findByTenantIdOrderByRefreshedAtDescStudentNameAsc(tenantId).map { it.toDomain() }
 }

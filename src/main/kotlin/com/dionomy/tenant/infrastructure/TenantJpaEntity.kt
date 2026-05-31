@@ -61,6 +61,9 @@ class JpaTenantRepository(
                 )
             }
 
+    override fun findAll(): List<Tenant> =
+        springDataRepository.findAll().map { it.toDomain() }
+
     override fun save(tenant: Tenant): Tenant =
         springDataRepository.save(TenantJpaEntity.fromDomain(tenant)).toDomain()
 }

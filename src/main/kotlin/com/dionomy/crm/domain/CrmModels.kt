@@ -17,6 +17,22 @@ data class RetentionSignal(
     val reason: String,
 )
 
+class RetentionSignalRecord(
+    val id: UUID,
+    val tenantId: UUID,
+    val studentId: UUID,
+    val studentName: String,
+    val type: RetentionSignalType,
+    val label: String,
+    val reason: String,
+    val refreshedAt: LocalDateTime = LocalDateTime.now(),
+)
+
+interface RetentionSignalRepository {
+    fun replaceTenantSignals(tenantId: UUID, signals: List<RetentionSignalRecord>)
+    fun findByTenant(tenantId: UUID): List<RetentionSignalRecord>
+}
+
 data class RiskStudent(
     val studentId: UUID,
     val studentName: String,
