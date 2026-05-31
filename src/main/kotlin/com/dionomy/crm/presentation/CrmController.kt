@@ -2,6 +2,7 @@ package com.dionomy.crm.presentation
 
 import com.dionomy.crm.application.CareRecordUseCases
 import com.dionomy.crm.application.ListRiskStudentsUseCase
+import com.dionomy.crm.application.RefreshRetentionSignalsUseCase
 import com.dionomy.crm.domain.CareRecord
 import com.dionomy.crm.domain.CareRecordStatus
 import com.dionomy.crm.domain.RetentionSignal
@@ -23,11 +24,19 @@ import java.util.UUID
 @RequestMapping("/api/crm")
 class CrmController(
     private val listRiskStudentsUseCase: ListRiskStudentsUseCase,
+    private val refreshRetentionSignalsUseCase: RefreshRetentionSignalsUseCase,
     private val careRecordUseCases: CareRecordUseCases,
 ) {
     @GetMapping("/risk-students")
     fun riskStudents(@RequestHeader("X-Tenant-Id") tenantId: UUID): List<RiskStudentResponse> =
         listRiskStudentsUseCase.execute(tenantId).map { it.toResponse() }
+
+    @PostMapping("/retention-signals/refresh")
+    fun refreshSignals(@RequestHeader("X-Tenant-Id") tenantId: UUID): List<RiskStudentResponse> {
+        refreshRetentionSignalsUseCase.refreshTenant(tenantId)
+
+        return listRiskStudentsUseCase.execute(tenantId).map { it.toResponse() }
+    }
 
     @GetMapping("/students/{studentId}/care-records")
     fun careRecords(
