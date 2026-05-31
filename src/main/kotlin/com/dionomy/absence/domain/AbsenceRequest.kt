@@ -14,6 +14,7 @@ class AbsenceRequest(
     val requestedAt: LocalDateTime = LocalDateTime.now(),
     private var resolvedAtValue: LocalDateTime? = null,
     private var resolvedTargetSessionIdValue: UUID? = null,
+    private var resolvedTargetAvailabilityIdValue: UUID? = null,
 ) {
     init {
         require(reason.isNotBlank())
@@ -28,11 +29,15 @@ class AbsenceRequest(
     val resolvedTargetSessionId: UUID?
         get() = resolvedTargetSessionIdValue
 
-    fun approve(targetSessionId: UUID? = null) {
+    val resolvedTargetAvailabilityId: UUID?
+        get() = resolvedTargetAvailabilityIdValue
+
+    fun approve(targetSessionId: UUID? = null, targetAvailabilityId: UUID? = null) {
         require(statusValue == AbsenceRequestStatus.PENDING)
         statusValue = AbsenceRequestStatus.APPROVED
         resolvedAtValue = LocalDateTime.now()
         resolvedTargetSessionIdValue = targetSessionId
+        resolvedTargetAvailabilityIdValue = targetAvailabilityId
     }
 
     fun reject() {

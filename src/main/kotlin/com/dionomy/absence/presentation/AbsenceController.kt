@@ -51,7 +51,7 @@ class AbsenceController(
         @PathVariable requestId: UUID,
         @RequestBody(required = false) request: ApproveAbsenceRequest?,
     ): AbsenceRequestResponse =
-        resolveAbsenceUseCase.approve(tenantId, requestId, request?.targetSessionId).toResponse()
+        resolveAbsenceUseCase.approve(tenantId, requestId, request?.targetSessionId, request?.targetAvailabilityId).toResponse()
 
     @PostMapping("/{requestId}/reject")
     fun reject(
@@ -80,6 +80,7 @@ data class CreateAbsenceRequest(
 
 data class ApproveAbsenceRequest(
     val targetSessionId: UUID?,
+    val targetAvailabilityId: UUID?,
 )
 
 data class AbsenceRequestResponse(
@@ -92,6 +93,7 @@ data class AbsenceRequestResponse(
     val requestedAt: LocalDateTime,
     val resolvedAt: LocalDateTime?,
     val resolvedTargetSessionId: UUID?,
+    val resolvedTargetAvailabilityId: UUID?,
 )
 
 private fun AbsenceRequest.toResponse(): AbsenceRequestResponse =
@@ -105,4 +107,5 @@ private fun AbsenceRequest.toResponse(): AbsenceRequestResponse =
         requestedAt = requestedAt,
         resolvedAt = resolvedAt,
         resolvedTargetSessionId = resolvedTargetSessionId,
+        resolvedTargetAvailabilityId = resolvedTargetAvailabilityId,
     )

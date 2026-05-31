@@ -44,6 +44,8 @@ class AbsenceRequestJpaEntity(
     var resolvedAt: LocalDateTime? = null,
     @Column(name = "resolved_target_session_id")
     var resolvedTargetSessionId: UUID? = null,
+    @Column(name = "resolved_target_availability_id")
+    var resolvedTargetAvailabilityId: UUID? = null,
 ) {
     fun toDomain(): AbsenceRequest =
         AbsenceRequest(
@@ -57,6 +59,7 @@ class AbsenceRequestJpaEntity(
             requestedAt = requestedAt,
             resolvedAtValue = resolvedAt,
             resolvedTargetSessionIdValue = resolvedTargetSessionId,
+            resolvedTargetAvailabilityIdValue = resolvedTargetAvailabilityId,
         )
 
     companion object {
@@ -72,6 +75,7 @@ class AbsenceRequestJpaEntity(
                 requestedAt = request.requestedAt,
                 resolvedAt = request.resolvedAt,
                 resolvedTargetSessionId = request.resolvedTargetSessionId,
+                resolvedTargetAvailabilityId = request.resolvedTargetAvailabilityId,
             )
     }
 }
