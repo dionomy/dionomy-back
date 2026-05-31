@@ -1,6 +1,8 @@
 package com.dionomy.operation.infrastructure
 
 import com.dionomy.operation.domain.Instructor
+import com.dionomy.operation.domain.InstructorAvailability
+import com.dionomy.operation.domain.InstructorAvailabilityRepository
 import com.dionomy.operation.domain.InstructorRepository
 import com.dionomy.operation.domain.Place
 import com.dionomy.operation.domain.PlaceRepository
@@ -10,6 +12,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
@@ -76,12 +79,58 @@ class PlaceJpaEntity(
     }
 }
 
+@Entity
+@Table(name = "instructor_availabilities")
+class InstructorAvailabilityJpaEntity(
+    @Id
+    @Column(name = "id", nullable = false)
+    var id: UUID = UUID.randomUUID(),
+    @Column(name = "tenant_id", nullable = false)
+    var tenantId: UUID = UUID.randomUUID(),
+    @Column(name = "instructor_id", nullable = false)
+    var instructorId: UUID = UUID.randomUUID(),
+    @Column(name = "starts_at", nullable = false)
+    var startsAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "ends_at", nullable = false)
+    var endsAt: LocalDateTime = LocalDateTime.now().plusHours(1),
+    @Column(name = "memo")
+    var memo: String? = null,
+) {
+    fun toDomain(): InstructorAvailability =
+        InstructorAvailability(
+            id = id,
+            tenantId = tenantId,
+            instructorId = instructorId,
+            startsAt = startsAt,
+            endsAt = endsAt,
+            memo = memo,
+        )
+
+    companion object {
+        fun fromDomain(availability: InstructorAvailability): InstructorAvailabilityJpaEntity =
+            InstructorAvailabilityJpaEntity(
+                id = availability.id,
+                tenantId = availability.tenantId,
+                instructorId = availability.instructorId,
+                startsAt = availability.startsAt,
+                endsAt = availability.endsAt,
+                memo = availability.memo,
+            )
+    }
+}
+
 interface SpringDataInstructorJpaRepository : JpaRepository<InstructorJpaEntity, UUID> {
     fun findByTenantIdOrderByNameAsc(tenantId: UUID): List<InstructorJpaEntity>
 }
 
 interface SpringDataPlaceJpaRepository : JpaRepository<PlaceJpaEntity, UUID> {
     fun findByTenantIdOrderByNameAsc(tenantId: UUID): List<PlaceJpaEntity>
+}
+
+interface SpringDataInstructorAvailabilityJpaRepository : JpaRepository<InstructorAvailabilityJpaEntity, UUID> {
+    fun findByTenantIdOrderByStartsAtAsc(tenantId: UUID): List<InstructorAvailabilityJpaEntity>
+    fun findByTenantIdAndInstructorIdOrderByStartsAtAsc(tenantId: UUID, instructorId: UUID): List<InstructorAvailabilityJpaEntity>
+    fun findByTenantIdAndId(tenantId: UUID, id: UUID): InstructorAvailabilityJpaEntity?
 }
 
 @Repository
@@ -104,4 +153,21 @@ class JpaPlaceRepository(
 
     override fun save(place: Place): Place =
         springDataRepository.save(PlaceJpaEntity.fromDomain(place)).toDomain()
+}
+
+@Repository
+class JpaInstructorAvailabilityRepository(
+    private val springDataRepository: SpringDataInstructorAvailabilityJpaRepository,
+) : InstructorAvailabilityRepository {
+    override fun findByTenant(tenantId: UUID): List<InstructorAvailability> =
+        springDataRepository.findByTenantIdOrderByStartsAtAsc(tenantId).map { it.toDomain() }
+
+    override fun findByInstructor(tenantId: UUID, instructorId: UUID): List<InstructorAvailability> =
+        springDataRepository.findByTenantIdAndInstructorIdOrderByStartsAtAsc(tenantId, instructorId).map { it.toDomain() }
+
+    override fun findByTenantAndId(tenantId: UUID, availabilityId: UUID): InstructorAvailability? =
+        springDataRepository.findByTenantIdAndId(tenantId, availabilityId)?.toDomain()
+
+    override fun save(availability: InstructorAvailability): InstructorAvailability =
+        springDataRepository.save(InstructorAvailabilityJpaEntity.fromDomain(availability)).toDomain()
 }
