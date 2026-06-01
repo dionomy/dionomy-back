@@ -1,7 +1,8 @@
 package com.dionomy.student.application
 
 import com.dionomy.pass.domain.PassRepository
-import com.dionomy.pass.domain.StudentPass
+import com.dionomy.pass.domain.PassExpirationReason
+import com.dionomy.pass.domain.PassLifecycleStatus
 import com.dionomy.student.domain.StudentRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -20,6 +21,7 @@ class GetStudentOperationSummaryUseCase(
             val activePass = passesByStudent[student.id]
                 ?.filter { !it.isExpired(today) }
                 ?.maxByOrNull { it.expiresOn }
+            val lifecycle = activePass?.lifecycle(today)
 
             StudentPassSummary(
                 studentId = student.id,
@@ -27,8 +29,10 @@ class GetStudentOperationSummaryUseCase(
                 remainingCount = activePass?.remainingCount,
                 totalCount = activePass?.totalCount,
                 expiresOn = activePass?.expiresOn,
-                expiringSoon = activePass?.isExpiringSoon(today) ?: false,
-                lowRemaining = activePass?.isLowRemaining() ?: false,
+                lifecycleStatus = lifecycle?.status,
+                expirationReason = lifecycle?.reason,
+                expiringSoon = lifecycle?.status == PassLifecycleStatus.EXPIRING_SOON,
+                lowRemaining = lifecycle?.reason == PassExpirationReason.COUNT_LOW,
             )
         }
 
@@ -54,12 +58,8 @@ data class StudentPassSummary(
     val remainingCount: Int?,
     val totalCount: Int?,
     val expiresOn: LocalDate?,
+    val lifecycleStatus: PassLifecycleStatus?,
+    val expirationReason: PassExpirationReason?,
     val expiringSoon: Boolean,
     val lowRemaining: Boolean,
 )
-
-private fun StudentPass.isExpiringSoon(today: LocalDate): Boolean =
-    !isExpired(today) && expiresOn <= today.plusDays(7)
-
-private fun StudentPass.isLowRemaining(): Boolean =
-    remainingCount in 1..2

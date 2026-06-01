@@ -11,6 +11,7 @@ import com.dionomy.crm.domain.RetentionSignalRecord
 import com.dionomy.crm.domain.RetentionSignalRepository
 import com.dionomy.crm.domain.RetentionSignalType
 import com.dionomy.crm.domain.RiskStudent
+import com.dionomy.pass.domain.PassLifecycleStatus
 import com.dionomy.pass.domain.PassRepository
 import com.dionomy.student.domain.StudentRepository
 import com.dionomy.tenant.domain.TenantRepository
@@ -70,7 +71,7 @@ class RefreshRetentionSignalsUseCase(
                 if (attendance.none() && student.createdAt.isBefore(LocalDateTime.now().minusDays(14))) {
                     add(student.toSignal(RetentionSignalType.DORMANT, "휴면", "최근 출석 기록이 없습니다.", refreshedAt))
                 }
-                if (passes.any { !it.isExpired(today) && it.expiresOn <= today.plusDays(7) }) {
+                if (passes.any { it.lifecycle(today).status == PassLifecycleStatus.EXPIRING_SOON }) {
                     add(student.toSignal(RetentionSignalType.PASS_EXPIRING_SOON, "만료 임박", "7일 이내 만료되는 수강권이 있습니다.", refreshedAt))
                 }
                 if (absenceRequests.size >= 3) {

@@ -29,6 +29,26 @@ class StudentPass(
     fun isExpired(today: LocalDate): Boolean =
         remainingCount <= 0 || !expiresOn.isAfter(today)
 
+    fun lifecycle(today: LocalDate): PassLifecycle {
+        if (remainingCount <= 0) {
+            return PassLifecycle(PassLifecycleStatus.USED_UP, PassExpirationReason.COUNT_EXHAUSTED)
+        }
+
+        if (!expiresOn.isAfter(today)) {
+            return PassLifecycle(PassLifecycleStatus.EXPIRED, PassExpirationReason.PERIOD_EXPIRED)
+        }
+
+        if (expiresOn <= today.plusDays(7)) {
+            return PassLifecycle(PassLifecycleStatus.EXPIRING_SOON, PassExpirationReason.PERIOD_EXPIRING_SOON)
+        }
+
+        if (remainingCount <= 2) {
+            return PassLifecycle(PassLifecycleStatus.EXPIRING_SOON, PassExpirationReason.COUNT_LOW)
+        }
+
+        return PassLifecycle(PassLifecycleStatus.ACTIVE, null)
+    }
+
     fun consume(count: Int) {
         require(count > 0)
         require(remainingCount >= count)
@@ -78,4 +98,23 @@ class PassUsageLog(
 enum class PassUsageType {
     CONSUME,
     RESTORE,
+}
+
+data class PassLifecycle(
+    val status: PassLifecycleStatus,
+    val reason: PassExpirationReason?,
+)
+
+enum class PassLifecycleStatus {
+    ACTIVE,
+    EXPIRING_SOON,
+    EXPIRED,
+    USED_UP,
+}
+
+enum class PassExpirationReason {
+    PERIOD_EXPIRED,
+    COUNT_EXHAUSTED,
+    PERIOD_EXPIRING_SOON,
+    COUNT_LOW,
 }

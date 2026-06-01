@@ -9,6 +9,8 @@ import com.dionomy.pass.application.ListStudentPassesUseCase
 import com.dionomy.pass.application.RecordPassUsageCommand
 import com.dionomy.pass.application.RecordPassUsageUseCase
 import com.dionomy.pass.domain.PassProduct
+import com.dionomy.pass.domain.PassExpirationReason
+import com.dionomy.pass.domain.PassLifecycleStatus
 import com.dionomy.pass.domain.PassUsageLog
 import com.dionomy.pass.domain.PassUsageType
 import com.dionomy.pass.domain.StudentPass
@@ -154,6 +156,8 @@ data class StudentPassResponse(
     val issuedOn: LocalDate,
     val expiresOn: LocalDate,
     val expired: Boolean,
+    val lifecycleStatus: PassLifecycleStatus,
+    val expirationReason: PassExpirationReason?,
 )
 
 data class PassUsageLogResponse(
@@ -178,18 +182,24 @@ private fun PassProduct.toResponse(): PassProductResponse =
     )
 
 private fun StudentPass.toResponse(): StudentPassResponse =
-    StudentPassResponse(
-        id = id,
-        tenantId = tenantId,
-        productId = productId,
-        studentId = studentId,
-        totalCount = totalCount,
-        usedCount = usedCount,
-        remainingCount = remainingCount,
-        issuedOn = issuedOn,
-        expiresOn = expiresOn,
-        expired = isExpired(LocalDate.now()),
-    )
+    LocalDate.now().let { today ->
+        val lifecycle = lifecycle(today)
+
+        StudentPassResponse(
+            id = id,
+            tenantId = tenantId,
+            productId = productId,
+            studentId = studentId,
+            totalCount = totalCount,
+            usedCount = usedCount,
+            remainingCount = remainingCount,
+            issuedOn = issuedOn,
+            expiresOn = expiresOn,
+            expired = isExpired(today),
+            lifecycleStatus = lifecycle.status,
+            expirationReason = lifecycle.reason,
+        )
+    }
 
 private fun PassUsageLog.toResponse(): PassUsageLogResponse =
     PassUsageLogResponse(

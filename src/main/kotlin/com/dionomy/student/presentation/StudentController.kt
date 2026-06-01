@@ -7,6 +7,8 @@ import com.dionomy.student.application.RegisterStudentCommand
 import com.dionomy.student.application.RegisterStudentUseCase
 import com.dionomy.student.application.StudentOperationSummary
 import com.dionomy.student.application.StudentPassSummary
+import com.dionomy.pass.domain.PassExpirationReason
+import com.dionomy.pass.domain.PassLifecycleStatus
 import com.dionomy.student.domain.Student
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -92,6 +94,8 @@ data class StudentPassSummaryResponse(
     val remainingCount: Int?,
     val totalCount: Int?,
     val expiresOn: java.time.LocalDate?,
+    val lifecycleStatus: PassLifecycleStatus?,
+    val expirationReason: PassExpirationReason?,
     val expiringSoon: Boolean,
     val lowRemaining: Boolean,
 )
@@ -122,6 +126,8 @@ private fun StudentPassSummary.toResponse(): StudentPassSummaryResponse =
         remainingCount = remainingCount,
         totalCount = totalCount,
         expiresOn = expiresOn,
+        lifecycleStatus = lifecycleStatus,
+        expirationReason = expirationReason,
         expiringSoon = expiringSoon,
         lowRemaining = lowRemaining,
     )
