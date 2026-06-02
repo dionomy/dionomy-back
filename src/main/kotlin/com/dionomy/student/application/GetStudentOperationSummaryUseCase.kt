@@ -22,6 +22,7 @@ class GetStudentOperationSummaryUseCase(
                 ?.filter { !it.isExpired(today) }
                 ?.maxByOrNull { it.expiresOn }
             val lifecycle = activePass?.lifecycle(today)
+            val lowRemaining = activePass?.remainingCount?.let { it <= 2 } ?: false
 
             StudentPassSummary(
                 studentId = student.id,
@@ -32,7 +33,7 @@ class GetStudentOperationSummaryUseCase(
                 lifecycleStatus = lifecycle?.status,
                 expirationReason = lifecycle?.reason,
                 expiringSoon = lifecycle?.status == PassLifecycleStatus.EXPIRING_SOON,
-                lowRemaining = lifecycle?.reason == PassExpirationReason.COUNT_LOW,
+                lowRemaining = lowRemaining,
             )
         }
 
