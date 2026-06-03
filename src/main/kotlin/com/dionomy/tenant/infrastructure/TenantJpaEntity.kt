@@ -19,6 +19,8 @@ class TenantJpaEntity(
     @Id
     @Column(name = "id", nullable = false)
     var id: UUID = UUID.randomUUID(),
+    @Column(name = "academy_number", nullable = false, unique = true)
+    var academyNumber: Int = 1,
     @Column(name = "name", nullable = false)
     var name: String = "",
     @Enumerated(EnumType.STRING)
@@ -28,6 +30,7 @@ class TenantJpaEntity(
     fun toDomain(): Tenant =
         Tenant(
             id = id,
+            academyNumber = academyNumber,
             name = name,
             status = status,
         )
@@ -36,13 +39,16 @@ class TenantJpaEntity(
         fun fromDomain(tenant: Tenant): TenantJpaEntity =
             TenantJpaEntity(
                 id = tenant.id,
+                academyNumber = tenant.academyNumber,
                 name = tenant.name,
                 status = tenant.status,
             )
     }
 }
 
-interface SpringDataTenantJpaRepository : JpaRepository<TenantJpaEntity, UUID>
+interface SpringDataTenantJpaRepository : JpaRepository<TenantJpaEntity, UUID> {
+    fun findByAcademyNumber(academyNumber: Int): TenantJpaEntity?
+}
 
 @Repository
 class JpaTenantRepository(
@@ -55,11 +61,15 @@ class JpaTenantRepository(
                 save(
                     Tenant(
                         id = tenantId,
+                        academyNumber = (springDataRepository.count() + 1).toInt(),
                         name = "샘플 아카데미",
                         status = TenantStatus.ACTIVE,
                     ),
                 )
             }
+
+    override fun findByAcademyNumber(academyNumber: Int): Tenant? =
+        springDataRepository.findByAcademyNumber(academyNumber)?.toDomain()
 
     override fun findAll(): List<Tenant> =
         springDataRepository.findAll().map { it.toDomain() }
