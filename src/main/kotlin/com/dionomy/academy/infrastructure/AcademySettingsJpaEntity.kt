@@ -3,6 +3,7 @@ package com.dionomy.academy.infrastructure
 import com.dionomy.academy.domain.AcademySettings
 import com.dionomy.academy.domain.AcademySettingsRepository
 import com.dionomy.academy.domain.Branding
+import com.dionomy.academy.domain.FeatureSettings
 import com.dionomy.academy.domain.MakeupPolicy
 import com.dionomy.academy.domain.PassPolicy
 import jakarta.persistence.Column
@@ -39,6 +40,22 @@ class AcademySettingsJpaEntity(
     var makeupExpiresInDays: Int = 30,
     @Column(name = "makeup_max_count", nullable = false)
     var makeupMaxCount: Int = 2,
+    @Column(name = "owner_schedule_enabled", nullable = false)
+    var ownerScheduleEnabled: Boolean = true,
+    @Column(name = "owner_students_enabled", nullable = false)
+    var ownerStudentsEnabled: Boolean = true,
+    @Column(name = "owner_notices_enabled", nullable = false)
+    var ownerNoticesEnabled: Boolean = true,
+    @Column(name = "teacher_mode_enabled", nullable = false)
+    var teacherModeEnabled: Boolean = true,
+    @Column(name = "student_pass_enabled", nullable = false)
+    var studentPassEnabled: Boolean = true,
+    @Column(name = "student_class_notes_enabled", nullable = false)
+    var studentClassNotesEnabled: Boolean = true,
+    @Column(name = "student_absence_request_enabled", nullable = false)
+    var studentAbsenceRequestEnabled: Boolean = true,
+    @Column(name = "crm_enabled", nullable = false)
+    var crmEnabled: Boolean = true,
 ) {
     fun toDomain(): AcademySettings =
         AcademySettings(
@@ -59,6 +76,16 @@ class AcademySettingsJpaEntity(
                 expiresInDays = makeupExpiresInDays,
                 maxCount = makeupMaxCount,
             ),
+            featureSettings = FeatureSettings(
+                ownerScheduleEnabled = ownerScheduleEnabled,
+                ownerStudentsEnabled = ownerStudentsEnabled,
+                ownerNoticesEnabled = ownerNoticesEnabled,
+                teacherModeEnabled = teacherModeEnabled,
+                studentPassEnabled = studentPassEnabled,
+                studentClassNotesEnabled = studentClassNotesEnabled,
+                studentAbsenceRequestEnabled = studentAbsenceRequestEnabled,
+                crmEnabled = crmEnabled,
+            ),
         )
 
     companion object {
@@ -75,6 +102,14 @@ class AcademySettingsJpaEntity(
                 makeupEnabled = settings.makeupPolicy.enabled,
                 makeupExpiresInDays = settings.makeupPolicy.expiresInDays,
                 makeupMaxCount = settings.makeupPolicy.maxCount,
+                ownerScheduleEnabled = settings.featureSettings.ownerScheduleEnabled,
+                ownerStudentsEnabled = settings.featureSettings.ownerStudentsEnabled,
+                ownerNoticesEnabled = settings.featureSettings.ownerNoticesEnabled,
+                teacherModeEnabled = settings.featureSettings.teacherModeEnabled,
+                studentPassEnabled = settings.featureSettings.studentPassEnabled,
+                studentClassNotesEnabled = settings.featureSettings.studentClassNotesEnabled,
+                studentAbsenceRequestEnabled = settings.featureSettings.studentAbsenceRequestEnabled,
+                crmEnabled = settings.featureSettings.crmEnabled,
             )
     }
 }
@@ -107,6 +142,16 @@ class JpaAcademySettingsRepository(
                             enabled = true,
                             expiresInDays = 30,
                             maxCount = 2,
+                        ),
+                        featureSettings = FeatureSettings(
+                            ownerScheduleEnabled = true,
+                            ownerStudentsEnabled = true,
+                            ownerNoticesEnabled = true,
+                            teacherModeEnabled = true,
+                            studentPassEnabled = true,
+                            studentClassNotesEnabled = true,
+                            studentAbsenceRequestEnabled = true,
+                            crmEnabled = true,
                         ),
                     ),
                 )

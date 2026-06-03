@@ -4,6 +4,7 @@ import com.dionomy.academy.application.GetAcademySettingsUseCase
 import com.dionomy.academy.application.UpdateAcademySettingsUseCase
 import com.dionomy.academy.domain.AcademySettings
 import com.dionomy.academy.domain.Branding
+import com.dionomy.academy.domain.FeatureSettings
 import com.dionomy.academy.domain.MakeupPolicy
 import com.dionomy.academy.domain.PassPolicy
 import jakarta.validation.Valid
@@ -53,6 +54,14 @@ data class UpdateAcademySettingsRequest(
     val makeupExpiresInDays: Int,
     @field:PositiveOrZero
     val makeupMaxCount: Int,
+    val ownerScheduleEnabled: Boolean = true,
+    val ownerStudentsEnabled: Boolean = true,
+    val ownerNoticesEnabled: Boolean = true,
+    val teacherModeEnabled: Boolean = true,
+    val studentPassEnabled: Boolean = true,
+    val studentClassNotesEnabled: Boolean = true,
+    val studentAbsenceRequestEnabled: Boolean = true,
+    val crmEnabled: Boolean = true,
 ) {
     fun toDomain(tenantId: UUID): AcademySettings =
         AcademySettings(
@@ -73,6 +82,16 @@ data class UpdateAcademySettingsRequest(
                 expiresInDays = makeupExpiresInDays,
                 maxCount = makeupMaxCount,
             ),
+            featureSettings = FeatureSettings(
+                ownerScheduleEnabled = ownerScheduleEnabled,
+                ownerStudentsEnabled = ownerStudentsEnabled,
+                ownerNoticesEnabled = ownerNoticesEnabled,
+                teacherModeEnabled = teacherModeEnabled,
+                studentPassEnabled = studentPassEnabled,
+                studentClassNotesEnabled = studentClassNotesEnabled,
+                studentAbsenceRequestEnabled = studentAbsenceRequestEnabled,
+                crmEnabled = crmEnabled,
+            ),
         )
 }
 
@@ -88,6 +107,14 @@ data class AcademySettingsResponse(
     val makeupEnabled: Boolean,
     val makeupExpiresInDays: Int,
     val makeupMaxCount: Int,
+    val ownerScheduleEnabled: Boolean,
+    val ownerStudentsEnabled: Boolean,
+    val ownerNoticesEnabled: Boolean,
+    val teacherModeEnabled: Boolean,
+    val studentPassEnabled: Boolean,
+    val studentClassNotesEnabled: Boolean,
+    val studentAbsenceRequestEnabled: Boolean,
+    val crmEnabled: Boolean,
 )
 
 private fun AcademySettings.toResponse(): AcademySettingsResponse =
@@ -103,4 +130,12 @@ private fun AcademySettings.toResponse(): AcademySettingsResponse =
         makeupEnabled = makeupPolicy.enabled,
         makeupExpiresInDays = makeupPolicy.expiresInDays,
         makeupMaxCount = makeupPolicy.maxCount,
+        ownerScheduleEnabled = featureSettings.ownerScheduleEnabled,
+        ownerStudentsEnabled = featureSettings.ownerStudentsEnabled,
+        ownerNoticesEnabled = featureSettings.ownerNoticesEnabled,
+        teacherModeEnabled = featureSettings.teacherModeEnabled,
+        studentPassEnabled = featureSettings.studentPassEnabled,
+        studentClassNotesEnabled = featureSettings.studentClassNotesEnabled,
+        studentAbsenceRequestEnabled = featureSettings.studentAbsenceRequestEnabled,
+        crmEnabled = featureSettings.crmEnabled,
     )

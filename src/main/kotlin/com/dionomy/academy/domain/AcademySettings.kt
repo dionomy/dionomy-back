@@ -10,4 +10,5 @@ data class AcademySettings(
     val branding: Branding,
     val passPolicy: PassPolicy,
     val makeupPolicy: MakeupPolicy,
+    val featureSettings: FeatureSettings,
 )
